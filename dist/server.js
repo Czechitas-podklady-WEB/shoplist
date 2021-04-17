@@ -15,26 +15,38 @@ const lists = {
   ]
 };
 
+const success = (response, data) => {
+  response.send({
+    status: 'success',
+    data,
+  });
+};
+
+const fail = (response, data, httpStatus) => {
+  response.status(httpStatus).send({
+    status: 'fail',
+    data
+  });
+};
+
 app.get('/api/lists', (req, res) => {
-  res.send(Object.keys(lists));
+  success(res, Object.keys(lists));
 });
 
 app.put('/api/lists/:name', (req, res) => {
   const { name } = req.params;
   lists[name] = [];
-  res.send({
-    status: `Created list with name '${name}'.`,
-  });
+  success(res);
 });
 
 app.get('/api/lists/:name', (req, res) => {
   const { name } = req.params;
   if (name in lists) {
-    res.send(lists[name]);
+    success(res, lists[name]);
   } else {
-    res.status(404).send({
-      error: `No list with name '${name}'.`,
-    })
+    fail(res, { 
+      message: `No list with name '${name}'.`,
+    }, 404);
   }
 });
 
@@ -43,16 +55,16 @@ app.post('/api/lists/:name', (req, res) => {
   const list = lists[name];
   
   if (list === undefined) {
-    res.status(400).send({
-      error: `No list with name '${name}'.`,
-    });
+    fail(res, { 
+      message: `No list with name '${name}'.`,
+    }, 400);
     return;
   }
   
   const { product, amount = 'some', bought = false } = req.body;
   const newItem = { id: nanoid(6), product, amount, bought };
   list.push(newItem)
-  res.send(newItem);
+  success(res, newItem);
 });
 
 app.listen(port, () => {
