@@ -4,6 +4,7 @@ const { nanoid } = require('nanoid');
 
 const port = 3000;
 const app = express();
+const LIST_NAME_REGEX = /^[a-z0-9]+$/;
 
 app.use(express.json())
 app.use(cors())
@@ -46,6 +47,13 @@ app.get('/api/lists/:name', (req, res) => {
 
 app.put('/api/lists/:name', (req, res) => {
   const { name } = req.params;
+  if(name.match(LIST_NAME_REGEX) === null) {
+    fail(res, {
+      message: 'List name contains invalid characters.',
+    }, 400);
+    return;
+  }
+  
   lists[name] = [];
   success(res, Object.keys(lists));
 });
