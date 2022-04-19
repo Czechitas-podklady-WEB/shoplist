@@ -1,13 +1,16 @@
-const cors = require('cors');
-const express = require('express');
-const { nanoid } = require('nanoid');
+import cors from 'cors';
+import express from 'express';
+import { nanoid } from 'nanoid';
 
-const port = 3000;
-const app = express();
-const LIST_NAME_REGEX = /^[a-z0-9]+$/;
+const port = process.env.PORT ?? 4000;
+const baseUrl = process.env.BASE_URL ?? '';
 
-app.use(express.json())
-app.use(cors())
+const server = express();
+server.use(express.json());
+server.use(cors());
+
+server.use(express.json());
+server.use(cors());
 
 const lists = {
   'default': [
@@ -30,11 +33,11 @@ const fail = (response, data, httpStatus) => {
   });
 };
 
-app.get('/api/lists', (req, res) => {
+server.get('/api/lists', (req, res) => {
   success(res, Object.keys(lists));
 });
 
-app.get('/api/lists/:name', (req, res) => {
+server.get('/api/lists/:name', (req, res) => {
   const { name } = req.params;
   if (name in lists) {
     success(res, lists[name]);
@@ -45,7 +48,7 @@ app.get('/api/lists/:name', (req, res) => {
   }
 });
 
-app.put('/api/lists/:name', (req, res) => {
+server.put('/api/lists/:name', (req, res) => {
   const { name } = req.params;
   if(name.match(LIST_NAME_REGEX) === null) {
     fail(res, {
@@ -58,7 +61,7 @@ app.put('/api/lists/:name', (req, res) => {
   success(res, Object.keys(lists));
 });
 
-app.delete('/api/lists/:name', (req, res) => {
+server.delete('/api/lists/:name', (req, res) => {
   const { name } = req.params;
   if (name === 'default') {
     fail(res, {
@@ -78,7 +81,7 @@ app.delete('/api/lists/:name', (req, res) => {
   }, 400);
 });
 
-app.get('/api/lists/:name/:itemId', (req, res) => {
+server.get('/api/lists/:name/:itemId', (req, res) => {
   const { name, itemId } = req.params;
   
   const list = lists[name];
@@ -102,7 +105,7 @@ app.get('/api/lists/:name/:itemId', (req, res) => {
   success(res, item);
 });
 
-app.post('/api/lists/:name', (req, res) => {
+server.post('/api/lists/:name', (req, res) => {
   const { name } = req.params;
   const list = lists[name];
   
@@ -119,7 +122,7 @@ app.post('/api/lists/:name', (req, res) => {
   success(res, newItem);
 });
 
-app.delete('/api/lists/:name/:itemId', (req, res) => {
+server.delete('/api/lists/:name/:itemId', (req, res) => {
   const { name, itemId } = req.params;
   
   const list = lists[name];
@@ -144,6 +147,6 @@ app.delete('/api/lists/:name/:itemId', (req, res) => {
   success(res);
 });
 
-app.listen(port, () => {
-  console.log(`Listening on ${port}...`);
+server.listen(port, () => {
+  console.log(`listening on ${port}...`);
 });
