@@ -1,6 +1,15 @@
 import cors from 'cors';
 import express from 'express';
-import { nanoid } from 'nanoid';
+import { success, error } from './nanorest.js';
+import { 
+  getAllLists,
+  getList,
+  createList,
+  deleteList,
+  getListItem,
+  addListItem,
+  deleteListItem,
+} from './lists.js';
 
 const port = process.env.PORT ?? 4000;
 const baseUrl = process.env.BASE_URL ?? '';
@@ -12,139 +21,175 @@ server.use(cors());
 server.use(express.json());
 server.use(cors());
 
-const lists = {
-  'default': [
-    { id: nanoid(6), product: 'Rohlíky', amount: '10', bought: false },
-    { id: nanoid(6), product: 'Máslo', amount: '1 ks', bought: false },
-  ]
-};
+const LIST_NAME_REGEX = /^[a-z0-9]+$/;
 
-const success = (response, data) => {
-  response.send({
-    status: 'success',
-    data,
-  });
-};
-
-const fail = (response, data, httpStatus) => {
-  response.status(httpStatus).send({
-    status: 'fail',
-    data
-  });
-};
-
-server.get('/api/lists', (req, res) => {
-  success(res, Object.keys(lists));
+server.get(`${baseUrl}/api/lists`, (req, res) => {
+  success(res, getAllLists());
 });
 
-server.get('/api/lists/:name', (req, res) => {
+server.get(`${baseUrl}/api/lists/:name`, (req, res) => {
   const { name } = req.params;
-  if (name in lists) {
-    success(res, lists[name]);
-  } else {
-    fail(res, { 
-      message: `No list with name '${name}'.`,
-    }, 404);
+  const list = getList(name);
+
+  if (list === null) {
+    error(res, 404, { 
+      code: 'not-found',
+      message: `Resource not found`,
+    });
   }
+
+  success(res, list);
 });
 
-server.put('/api/lists/:name', (req, res) => {
+
+const executeCreateList = (req, res) => {
   const { name } = req.params;
+
   if(name.match(LIST_NAME_REGEX) === null) {
-    fail(res, {
+    error(res, 400, {
+      code: 'invalid-list-name',
       message: 'List name contains invalid characters.',
-    }, 400);
+    });
     return;
   }
-  
-  lists[name] = [];
-  success(res, Object.keys(lists));
-});
 
-server.delete('/api/lists/:name', (req, res) => {
+  const newList = createList(name);
+
+  if (newList === null) {
+    error(res, 400, {
+      code: 'list-exists',
+      message: `List with name '${name}' already exists.`,
+    });
+    return;
+  }
+
+  success(res, newList);
+}
+
+const executeDeleteList = (req, res) => {
   const { name } = req.params;
+
   if (name === 'default') {
-    fail(res, {
+    error(res, 400, {
+      code: 'no-default-delete',
       message: `Cannot delete the 'default' list.`,
-    }, 400);
+    });
     return;
   }
   
-  if (name in lists) {
-    delete lists[name];
-    success(res, Object.keys(lists));
+  const deleteResult = deleteList(name);
+  if (deleteResult) {
+    success(res);
     return;
   }
 
-  fail(res, {
+  error(res, 400, {
     message: `No list with name '${name}'`,
-  }, 400);
+  });
+}
+
+const executeAddItem = (req, res) => {
+  const { name } = req.params;
+  const list = getList(name);
+
+  if (list === null) {
+    error(res, 404, { 
+      code: 'not-found',
+      message: `Resource not found`,
+    });
+    return;
+  }
+
+  const item = addListItem(list, req.body);
+  success(res, item);
+}
+
+const executeDeleteItem = (req, res) => {
+  const { name, itemId } = req.params;
+  const list = getList(name);
+
+  if (list === null) {
+    error(res, 404, { 
+      code: 'not-found',
+      message: `Resource not found`,
+    });
+    return;
+  }
+
+  const result = deleteListItem(list, itemId);
+  if (result) {
+    success(res);
+    return;
+  }
+  
+  error(res, 400, { 
+    code: 'item-not-found',
+    message: `No item with id '${itemId}' has been found in list '${name}'`,
+  });
+}
+
+server.post(`${baseUrl}/api/lists/:name`, (req, res) => {
+  const { action } = req.body;
+  
+  if (action === undefined) {
+    error(res, 400, {
+      code: 'missing-field',
+      message: "The field 'action' is required",
+    });
+  }
+
+  if (action === 'create') {
+    return executeCreateList(req, res);
+  }
+  
+  if (action === 'delete') {
+    return executeDeleteList(req, res);
+  }
+
+  if (action === 'addItem') {
+    return executeAddItem(req, res);
+  }
+
+  error(res, 400, {
+    code: 'unknown-action',
+    message: `There is no action '${action}'`,
+  });  
 });
 
 server.get('/api/lists/:name/:itemId', (req, res) => {
   const { name, itemId } = req.params;
   
-  const list = lists[name];
+  const item = getListItem(name, itemId);
   
-  if (list === undefined) {
-    fail(res, { 
-      message: `No list with name '${name}'.`,
-    }, 400);
-    return;
-  }
-
-  const item = list.find((item) => item.id === itemId);
-  
-  if (item === undefined) {
-    fail(res, { 
-      message: `No item with id '${itemId}' in list '${name}'.`,
-    }, 400);
+  if (item === null) {
+    error(res, 404, { 
+      code: 'not-found',
+      message: `Resource not found`,
+    })
     return;
   }
 
   success(res, item);
 });
 
-server.post('/api/lists/:name', (req, res) => {
-  const { name } = req.params;
-  const list = lists[name];
+server.post('/api/lists/:name/:itemId', (req, res) => {
+  const { action } = req.body;
   
-  if (list === undefined) {
-    fail(res, { 
-      message: `No list with name '${name}'.`,
-    }, 400);
-    return;
-  }
-  
-  const { product, amount = 'some', bought = false } = req.body;
-  const newItem = { id: nanoid(6), product, amount, bought };
-  list.push(newItem)
-  success(res, newItem);
-});
-
-server.delete('/api/lists/:name/:itemId', (req, res) => {
-  const { name, itemId } = req.params;
-  
-  const list = lists[name];
-  
-  if (list === undefined) {
-    fail(res, { 
-      message: `No list with name '${name}'.`,
-    }, 400);
-    return;
+  if (action === undefined) {
+    error(res, 400, {
+      code: 'missing-field',
+      message: "The field 'action' is required",
+    });
   }
 
-  const itemIdx = list.findIndex((item) => item.id === itemId);
-  
-  if (itemIdx === -1) {
-    fail(res, { 
-      message: `No item with id '${itemId}' in list '${name}'.`,
-    }, 400);
-    return;
+  if (action === 'deleteItem') {
+    return executeDeleteItem(req, res);
   }
 
-  list.splice(itemIdx, 1);
-  success(res);
+  error(res, 400, {
+    code: 'unknown-action',
+    message: `There is no action '${action}'`,
+  });  
 });
 
 server.listen(port, () => {
