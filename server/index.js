@@ -23,6 +23,10 @@ server.use(cors());
 
 const LIST_NAME_REGEX = /^[a-z0-9]+$/;
 
+server.use(`${baseUrl}/docs`, express.static('docs/_site', {
+  extensions: ['html'],
+}));
+
 server.get(`${baseUrl}/api/lists`, (req, res) => {
   success(res, getAllLists());
 });
