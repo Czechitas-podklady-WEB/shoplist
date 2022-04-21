@@ -10,6 +10,7 @@ import {
   addListItem,
   setItemDone,
   deleteListItem,
+  resetToDefault,
 } from './lists.js';
 
 const port = process.env.PORT ?? 4000;
@@ -32,6 +33,11 @@ server.get(`${baseUrl}/api/lists`, (req, res) => {
   success(res, getAllLists());
 });
 
+server.get(`${baseUrl}/api/reset`, (req, res) => {
+  const updatedLists = resetToDefault();
+  success(res, updatedLists);
+});
+
 server.get(`${baseUrl}/api/lists/:name`, (req, res) => {
   const { name } = req.params;
   const list = getList(name);
@@ -41,6 +47,7 @@ server.get(`${baseUrl}/api/lists/:name`, (req, res) => {
       code: 'not-found',
       message: `Resource not found`,
     });
+    return;
   }
 
   success(res, list);
@@ -208,6 +215,7 @@ server.post(`${baseUrl}/api/lists/:name`, (req, res) => {
       code: 'missing-field',
       message: "The field 'action' is required",
     });
+    return;
   }
 
   if (action === 'create') {
@@ -252,6 +260,7 @@ server.post('/api/lists/:name/:itemId', (req, res) => {
       code: 'missing-field',
       message: "The field 'action' is required",
     });
+    return;
   }
 
   if (action === 'setDone') {

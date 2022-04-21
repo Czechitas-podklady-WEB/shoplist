@@ -1,19 +1,27 @@
 import { nanoid } from 'nanoid';
 
-let lists = [
+const createDefaultData = () => [
   {
     name: 'default',
     items: [
       { id: nanoid(6), product: 'Rohlíky', amount: '10', done: false },
-      { id: nanoid(6), product: 'Máslo', amount: '1 ks', done: false },
+      { id: nanoid(6), product: 'Máslo', amount: '500 g', done: true },
+      { id: nanoid(6), product: 'Šunka', amount: '200 g', done: true },
     ]
   },
 ];
+
+let lists = createDefaultData();
 
 export const getAllLists = () => lists.map((list) => ({
   name: list.name,
   itemsCount: list.items.length,
 }));
+
+export const resetToDefault = () => {
+  lists = createDefaultData();
+  return lists;
+};
 
 export const getList = (listName) => lists.find((list) => list.name === listName) ?? null;
 
