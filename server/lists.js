@@ -53,12 +53,12 @@ export const deleteList = (name) => {
   return true;
 };
 
-export const addListItem = (list, { product, amount, done }) => {
+export const addListItem = (list, product, amount, done) => {
   const newItem = {
     id: nanoid(6),
     product,
-    amount: amount ?? '',
-    done: done ?? false,
+    amount,
+    done,
   };
   list.items.push(newItem);
   
@@ -78,4 +78,15 @@ export const deleteListItem = (list, itemId) => {
   ];
   
   return true;
+}
+
+export const setItemDone = (list, itemId, done) => {
+  const item = list.items.find((item) => item.id === itemId) ?? null;
+  if (item === null) {
+    return null;
+  }
+
+  item.done = done;
+  
+  return item;
 }

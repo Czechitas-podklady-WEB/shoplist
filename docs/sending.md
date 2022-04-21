@@ -50,6 +50,27 @@ Besides `action`, the JSON has these properties:
 | amount   | string  | no       | `""`          |
 | done     | boolean | no       | `false`       |
 
+## Set item done [POST]
+
+Set the field `done` of item with id `itemId` in the list with name `name`.
+
+```
+{{ site.apibase }}/lists/{name}/{itemId}
+```
+
+```json
+{
+  "action": "addDone",
+  "done": true
+}
+```
+
+Besides `action`, the JSON has these properties:
+
+| Property | Type    | Required | Default value |
+| -------- | ------- | -------- | ------------- |
+| done     | boolean | no       | `true`        |
+
 ## Delete item from a list [POST]
 
 Delete the item with id `itemId` from the shopping list with name `name`.

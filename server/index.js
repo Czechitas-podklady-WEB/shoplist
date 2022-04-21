@@ -8,6 +8,7 @@ import {
   deleteList,
   getListItem,
   addListItem,
+  setItemDone,
   deleteListItem,
 } from './lists.js';
 
@@ -104,7 +105,43 @@ const executeAddItem = (req, res) => {
     return;
   }
 
-  const item = addListItem(list, req.body);
+  const { product, amount = '', done = false } = req.body;
+
+  console.log(product, amount, done);
+
+  if (product === undefined) {
+    error(res, 400, {
+      code: 'missing-field',
+      message: "The field 'product' is required",
+    });
+    return;
+  }
+
+  if (typeof product !== 'string') {
+    error(res, 400, {
+      code: 'invalid-field',
+      message: "The field 'product' must be a ",
+    });
+    return;
+  }
+
+  if (typeof amount !== 'string') {
+    error(res, 400, {
+      code: 'invalid-field',
+      message: "The field 'amount' must be a string",
+    });
+    return;
+  }
+
+  if (typeof done !== 'boolean') {
+    error(res, 400, {
+      code: 'invalid-field',
+      message: "The field 'done' must be a boolean",
+    });
+    return;
+  }
+
+  const item = addListItem(list, product, amount, done);
   success(res, item);
 }
 
@@ -130,6 +167,39 @@ const executeDeleteItem = (req, res) => {
     code: 'item-not-found',
     message: `No item with id '${itemId}' has been found in list '${name}'`,
   });
+}
+
+const executeSetDone = (req, res) => {
+  const { name, itemId } = req.params;
+  const list = getList(name);
+
+  if (list === null) {
+    error(res, 404, { 
+      code: 'not-found',
+      message: `Resource not found`,
+    });
+    return;
+  }
+
+  const { done = true } = req.body;
+  if (typeof done !== 'boolean') {
+    error(res, 400, {
+      code: 'invalid-field',
+      message: "The field 'done' must be a boolean",
+    });
+    return;
+  }
+
+  const item = setItemDone(list, itemId, done);
+  if (item === null) {
+    error(res, 400, { 
+      code: 'item-not-found',
+      message: `No item with id '${itemId}' has been found in list '${name}'`,
+    });
+    return;
+  }
+  
+  success(res, item);
 }
 
 server.post(`${baseUrl}/api/lists/:name`, (req, res) => {
@@ -184,6 +254,10 @@ server.post('/api/lists/:name/:itemId', (req, res) => {
       code: 'missing-field',
       message: "The field 'action' is required",
     });
+  }
+
+  if (action === 'setDone') {
+    return executeSetDone(req, res);
   }
 
   if (action === 'deleteItem') {
