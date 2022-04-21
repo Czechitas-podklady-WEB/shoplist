@@ -25,6 +25,8 @@ Body:
 }
 ```
 
+The parametr `name` can only consist of lowercase letters and numbers. No special characters or accented letters are allowed.
+
 ## Add item to a list [POST]
 
 Add one item to the shopping list with name `name`.

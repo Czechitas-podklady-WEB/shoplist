@@ -60,16 +60,16 @@ export const addListItem = (list, product, amount, done) => {
     amount,
     done,
   };
-  list.items.push(newItem);
+  list.items = [...list.items, newItem];
   
-  return newItem;
+  return list;
 }
 
 export const deleteListItem = (list, itemId) => {
   const itemIndex = list.items.findIndex((item) => item.id === itemId);
 
   if (itemIndex === -1) {
-    return false;
+    return null;
   }
 
   list.items = [
@@ -77,7 +77,7 @@ export const deleteListItem = (list, itemId) => {
     ...list.items.slice(itemIndex + 1),
   ];
   
-  return true;
+  return list;
 }
 
 export const setItemDone = (list, itemId, done) => {
@@ -88,5 +88,5 @@ export const setItemDone = (list, itemId, done) => {
 
   item.done = done;
   
-  return item;
+  return list;
 }

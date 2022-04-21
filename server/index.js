@@ -107,8 +107,6 @@ const executeAddItem = (req, res) => {
 
   const { product, amount = '', done = false } = req.body;
 
-  console.log(product, amount, done);
-
   if (product === undefined) {
     error(res, 400, {
       code: 'missing-field',
@@ -141,8 +139,8 @@ const executeAddItem = (req, res) => {
     return;
   }
 
-  const item = addListItem(list, product, amount, done);
-  success(res, item);
+  const updatedList = addListItem(list, product, amount, done);
+  success(res, updatedList);
 }
 
 const executeDeleteItem = (req, res) => {
@@ -157,16 +155,16 @@ const executeDeleteItem = (req, res) => {
     return;
   }
 
-  const result = deleteListItem(list, itemId);
-  if (result) {
-    success(res);
+  const updatedList = deleteListItem(list, itemId);
+  if (updatedList === null) {
+    error(res, 400, { 
+      code: 'item-not-found',
+      message: `No item with id '${itemId}' has been found in list '${name}'`,
+    });
     return;
   }
   
-  error(res, 400, { 
-    code: 'item-not-found',
-    message: `No item with id '${itemId}' has been found in list '${name}'`,
-  });
+  success(res, updatedList);
 }
 
 const executeSetDone = (req, res) => {
@@ -190,8 +188,8 @@ const executeSetDone = (req, res) => {
     return;
   }
 
-  const item = setItemDone(list, itemId, done);
-  if (item === null) {
+  const updatedList = setItemDone(list, itemId, done);
+  if (updatedList === null) {
     error(res, 400, { 
       code: 'item-not-found',
       message: `No item with id '${itemId}' has been found in list '${name}'`,
@@ -199,7 +197,7 @@ const executeSetDone = (req, res) => {
     return;
   }
   
-  success(res, item);
+  success(res, updatedList);
 }
 
 server.post(`${baseUrl}/api/lists/:name`, (req, res) => {
