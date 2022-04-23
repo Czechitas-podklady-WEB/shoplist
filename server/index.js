@@ -236,7 +236,7 @@ server.post(`${baseUrl}/api/lists/:name`, (req, res) => {
   });  
 });
 
-server.get('/api/lists/:name/:itemId', (req, res) => {
+server.get(`${baseUrl}/api/lists/:name/:itemId`, (req, res) => {
   const { name, itemId } = req.params;
   
   const item = getListItem(name, itemId);
@@ -252,7 +252,7 @@ server.get('/api/lists/:name/:itemId', (req, res) => {
   success(res, item);
 });
 
-server.post('/api/lists/:name/:itemId', (req, res) => {
+server.post(`${baseUrl}/api/lists/:name/:itemId`, (req, res) => {
   const { action } = req.body;
   
   if (action === undefined) {
