@@ -95,6 +95,5 @@ export const setItemDone = (list, itemId, done) => {
   }
 
   item.done = done;
-  
-  return list;
+  return item;
 }

@@ -195,8 +195,8 @@ const executeSetDone = (req, res) => {
     return;
   }
 
-  const updatedList = setItemDone(list, itemId, done);
-  if (updatedList === null) {
+  const updatedItem = setItemDone(list, itemId, done);
+  if (updatedItem === null) {
     error(res, 400, { 
       code: 'item-not-found',
       message: `No item with id '${itemId}' has been found in list '${name}'`,
@@ -204,7 +204,7 @@ const executeSetDone = (req, res) => {
     return;
   }
   
-  success(res, updatedList);
+  success(res, updatedItem);
 }
 
 server.post(`${baseUrl}/api/lists/:name`, (req, res) => {
