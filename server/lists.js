@@ -88,12 +88,12 @@ export const deleteListItem = (list, itemId) => {
   return list;
 }
 
-export const setItemDone = (list, itemId, done) => {
+export const toggleItemDone = (list, itemId) => {
   const item = list.items.find((item) => item.id === itemId) ?? null;
   if (item === null) {
     return null;
   }
 
-  item.done = done;
+  item.done = !item.done;
   return item;
 }

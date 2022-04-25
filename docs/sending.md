@@ -52,9 +52,11 @@ Besides `action`, the JSON has these properties:
 | amount   | string  | no       | `""`          |
 | done     | boolean | no       | `false`       |
 
-## Set item done [POST]
+The endpoint returns the whole updated list.
 
-Set the field `done` of item with id `itemId` in the list with name `name`.
+## Toggle item done [POST]
+
+Flip the boolean value of the field `done` of item with id `itemId` in the list with name `name`.
 
 ```
 {{ site.apibase }}/lists/{name}/{itemId}
@@ -62,16 +64,11 @@ Set the field `done` of item with id `itemId` in the list with name `name`.
 
 ```json
 {
-  "action": "addDone",
-  "done": true
+  "action": "toggleDone"
 }
 ```
 
-Besides `action`, the JSON has these properties:
-
-| Property | Type    | Required | Default value |
-| -------- | ------- | -------- | ------------- |
-| done     | boolean | no       | `true`        |
+The endpoint return the updated item.
 
 ## Delete item from a list [POST]
 
@@ -86,6 +83,8 @@ Delete the item with id `itemId` from the shopping list with name `name`.
   "action": "deleteItem"
 }
 ```
+
+The endpoint returns the whole updated list.
 
 ## Delete the whole list [POST]
 

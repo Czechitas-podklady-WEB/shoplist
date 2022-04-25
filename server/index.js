@@ -8,7 +8,7 @@ import {
   deleteList,
   getListItem,
   addListItem,
-  setItemDone,
+  toggleItemDone,
   deleteListItem,
   resetToDefault,
 } from './lists.js';
@@ -174,7 +174,7 @@ const executeDeleteItem = (req, res) => {
   success(res, updatedList);
 }
 
-const executeSetDone = (req, res) => {
+const executeToggleDone = (req, res) => {
   const { name, itemId } = req.params;
   const list = getList(name);
 
@@ -186,16 +186,7 @@ const executeSetDone = (req, res) => {
     return;
   }
 
-  const { done = true } = req.body;
-  if (typeof done !== 'boolean') {
-    error(res, 400, {
-      code: 'invalid-field',
-      message: "The field 'done' must be a boolean",
-    });
-    return;
-  }
-
-  const updatedItem = setItemDone(list, itemId, done);
+  const updatedItem = toggleItemDone(list, itemId);
   if (updatedItem === null) {
     error(res, 400, { 
       code: 'item-not-found',
@@ -263,8 +254,8 @@ server.post(`${baseUrl}/api/lists/:name/:itemId`, (req, res) => {
     return;
   }
 
-  if (action === 'setDone') {
-    return executeSetDone(req, res);
+  if (action === 'toggleDone') {
+    return executeToggleDone(req, res);
   }
 
   if (action === 'deleteItem') {
