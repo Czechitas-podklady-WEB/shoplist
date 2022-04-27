@@ -20,9 +20,6 @@ const server = express();
 server.use(express.json());
 server.use(cors());
 
-server.use(express.json());
-server.use(cors());
-
 const LIST_NAME_REGEX = /^[a-z0-9]+$/;
 
 server.use(`${baseUrl}/docs`, express.static('docs/_site', {
