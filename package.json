@@ -27,6 +27,7 @@
     "nanoid": "^3.3.3"
   },
   "devDependencies": {
-    "concurrently": "^7.1.0"
+    "concurrently": "^7.1.0",
+    "nodemon": "^2.0.15"
   }
 }
