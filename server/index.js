@@ -1,269 +1,222 @@
-import cors from 'cors';
 import express from 'express';
-import { success, error } from './nanorest.js';
-import { 
-  getAllLists,
+import cors from 'cors';
+import { param, body, validationResult } from 'express-validator';
+import { sendResource, sendError } from './nanorest.js';
+import {
+  getWeek,
+  getDays,
   getList,
-  createList,
-  deleteList,
-  getListItem,
-  addListItem,
-  toggleItemDone,
-  deleteListItem,
-  resetToDefault,
+  getItem,
+  addItem,
+  updateItem,
+  deleteItem,
+  // resetToDefault,
 } from './lists.js';
 
 const port = process.env.PORT ?? 4000;
 const baseUrl = process.env.BASE_URL ?? '';
 
 const server = express();
-server.use(express.json());
-server.use(cors());
-
-const LIST_NAME_REGEX = /^[a-z0-9]+$/;
 
 server.use(`${baseUrl}/docs`, express.static('docs/_site', {
   extensions: ['html'],
 }));
 
-server.get(`${baseUrl}/api/lists`, (req, res) => {
-  success(res, getAllLists());
-});
+server.use(express.json());
+server.use(cors());
 
-server.get(`${baseUrl}/api/reset`, (req, res) => {
-  const updatedLists = resetToDefault();
-  success(res, updatedLists);
-});
+server.get(
+  `${baseUrl}/api/weeks/:weekNumber`,
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
 
-server.get(`${baseUrl}/api/lists/:name`, (req, res) => {
-  const { name } = req.params;
-  const list = getList(name);
-
-  if (list === null) {
-    error(res, 404, { 
-      code: 'not-found',
-      message: `Resource not found`,
-    });
-    return;
+    const { weekNumber } = req.params;
+    const week = getWeek(Number(weekNumber));
+    sendResource(req, res, week);
   }
+);
 
-  success(res, list);
-});
+server.get(
+  `${baseUrl}/api/weeks/:weekNumber`,
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
 
-
-const executeCreateList = (req, res) => {
-  const { name } = req.params;
-
-  if(name.match(LIST_NAME_REGEX) === null) {
-    error(res, 400, {
-      code: 'invalid-list-name',
-      message: 'List name contains invalid characters.',
-    });
-    return;
+    const { weekNumber } = req.params;
+    const week = getWeek(Number(weekNumber));
+    sendResource(req, res, week);
   }
+);
 
-  const newList = createList(name);
+server.get(
+  `${baseUrl}/api/weeks/:weekNumber/days`, 
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
 
-  if (newList === null) {
-    error(res, 400, {
-      code: 'list-exists',
-      message: `List with name '${name}' already exists.`,
-    });
-    return;
+    const { weekNumber } = req.params;
+    const days = getDays(weekNumber);
+    sendResource(req, res, days);
   }
+);
 
-  success(res, newList);
-}
+server.get(
+  `${baseUrl}/api/weeks/:weekNumber/days/:day`, 
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  param('day').isIn(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
 
-const executeDeleteList = (req, res) => {
-  const { name } = req.params;
-
-  if (name === 'default') {
-    error(res, 400, {
-      code: 'no-default-delete',
-      message: `Cannot delete the 'default' list.`,
-    });
-    return;
+    const { weekNumber, day } = req.params;
+    sendResource(req, res, getList(weekNumber, day));
   }
-  
-  const deleteResult = deleteList(name);
-  if (deleteResult) {
-    success(res);
-    return;
+);
+
+server.get(
+  `${baseUrl}/api/weeks/:weekNumber/days/:day/:itemId`, 
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  param('day').isIn(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
+
+    const { weekNumber, day, itemId } = req.params;
+    
+    const product = getItem(weekNumber, day, itemId);
+
+    if (product === undefined) {
+      sendError(req, res, 404, ['No product with this id']);
+      return;
+    }
+    
+    sendResource(req, res, product);
   }
+);
 
-  error(res, 400, {
-    message: `No list with name '${name}'`,
-  });
-}
+server.post(
+  `${baseUrl}/api/weeks/:weekNumber/days/:day`, 
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  param('day').isIn(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
 
-const executeAddItem = (req, res) => {
-  const { name } = req.params;
-  const list = getList(name);
+    const { product, amount, done = false } = req.body;
+    const msgs = [];
+    if (product === undefined) {
+      msgs.push("The field 'product' is required");
+    }
 
-  if (list === null) {
-    error(res, 404, { 
-      code: 'not-found',
-      message: `Resource not found`,
-    });
-    return;
+    if (amount === undefined) {
+      msgs.push("The field 'amount' is required");
+    }
+
+    if (typeof product !== 'string') {
+      msgs.push("The field 'product' must be a string");
+    }
+
+    if (typeof amount !== 'string') {
+      msgs.push("The field 'amount' must be a string");
+    }
+
+    if (typeof done !== 'boolean') {
+      msgs.push("The field 'done' must be a boolean");
+    }
+
+    if (msgs.length > 0) {
+      sendError(req, res, 400, msgs);
+      return;
+    }
+
+    const { weekNumber, day } = req.params;
+    const newList = addItem(weekNumber, day, product, amount, done);
+
+    sendResource(req, res, newList);
   }
+);
 
-  const { product, amount = '', done = false } = req.body;
+server.patch(
+  `${baseUrl}/api/weeks/:weekNumber/days/:day/:itemId`, 
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  param('day').isIn(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
 
-  if (product === undefined) {
-    error(res, 400, {
-      code: 'missing-field',
-      message: "The field 'product' is required",
-    });
-    return;
+    const { product, amount, done } = req.body;
+    
+    const msgs = [];
+    if (product !== undefined && typeof product !== 'string') {
+      msgs.push("The field 'product' must be a string");
+    }
+
+    if (amount !== undefined && typeof amount !== 'string') {
+      msgs.push("The field 'amount' must be a string");
+    }
+
+    if (done !== undefined && typeof done !== 'boolean') {
+      msgs.push("The field 'done' must be a boolean");
+    }
+
+    if (msgs.length > 0) {
+      sendError(req, res, 400, msgs);
+    }
+
+    
+    const { weekNumber, day, itemId } = req.params;
+
+    const item = updateItem(weekNumber, day, itemId, product, amount, done);
+
+    if (item === undefined) {
+      sendError(req, res, 404, ['No item with this id']);
+      return;
+    }
+
+    sendResource(req, res, item);
   }
+);
 
-  if (typeof product !== 'string') {
-    error(res, 400, {
-      code: 'invalid-field',
-      message: "The field 'product' must be a ",
-    });
-    return;
+server.delete(
+  `${baseUrl}/api/weeks/:weekNumber/days/:day/:itemId`, 
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  param('day').isIn(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
+    
+    const { weekNumber, day, itemId } = req.params;
+
+    const list = deleteItem(weekNumber, day, itemId);
+
+    if (list === undefined) {
+      sendError(req, res, 404, ['No item with this id']);
+      return;
+    }
+
+    sendResource(req, res, list);
   }
-
-  if (typeof amount !== 'string') {
-    error(res, 400, {
-      code: 'invalid-field',
-      message: "The field 'amount' must be a string",
-    });
-    return;
-  }
-
-  if (typeof done !== 'boolean') {
-    error(res, 400, {
-      code: 'invalid-field',
-      message: "The field 'done' must be a boolean",
-    });
-    return;
-  }
-
-  const updatedList = addListItem(list, product, amount, done);
-  success(res, updatedList);
-}
-
-const executeDeleteItem = (req, res) => {
-  const { name, itemId } = req.params;
-  const list = getList(name);
-
-  if (list === null) {
-    error(res, 404, { 
-      code: 'not-found',
-      message: `Resource not found`,
-    });
-    return;
-  }
-
-  const updatedList = deleteListItem(list, itemId);
-  if (updatedList === null) {
-    error(res, 400, { 
-      code: 'item-not-found',
-      message: `No item with id '${itemId}' has been found in list '${name}'`,
-    });
-    return;
-  }
-  
-  success(res, updatedList);
-}
-
-const executeToggleDone = (req, res) => {
-  const { name, itemId } = req.params;
-  const list = getList(name);
-
-  if (list === null) {
-    error(res, 404, { 
-      code: 'not-found',
-      message: `Resource not found`,
-    });
-    return;
-  }
-
-  const updatedItem = toggleItemDone(list, itemId);
-  if (updatedItem === null) {
-    error(res, 400, { 
-      code: 'item-not-found',
-      message: `No item with id '${itemId}' has been found in list '${name}'`,
-    });
-    return;
-  }
-  
-  success(res, updatedItem);
-}
-
-server.post(`${baseUrl}/api/lists/:name`, (req, res) => {
-  const { action } = req.body;
-  
-  if (action === undefined) {
-    error(res, 400, {
-      code: 'missing-field',
-      message: "The field 'action' is required",
-    });
-    return;
-  }
-
-  if (action === 'create') {
-    return executeCreateList(req, res);
-  }
-  
-  if (action === 'delete') {
-    return executeDeleteList(req, res);
-  }
-
-  if (action === 'addItem') {
-    return executeAddItem(req, res);
-  }
-
-  error(res, 400, {
-    code: 'unknown-action',
-    message: `There is no action '${action}'`,
-  });  
-});
-
-server.get(`${baseUrl}/api/lists/:name/:itemId`, (req, res) => {
-  const { name, itemId } = req.params;
-  
-  const item = getListItem(name, itemId);
-  
-  if (item === null) {
-    error(res, 404, { 
-      code: 'not-found',
-      message: `Resource not found`,
-    })
-    return;
-  }
-
-  success(res, item);
-});
-
-server.post(`${baseUrl}/api/lists/:name/:itemId`, (req, res) => {
-  const { action } = req.body;
-  
-  if (action === undefined) {
-    error(res, 400, {
-      code: 'missing-field',
-      message: "The field 'action' is required",
-    });
-    return;
-  }
-
-  if (action === 'toggleDone') {
-    return executeToggleDone(req, res);
-  }
-
-  if (action === 'deleteItem') {
-    return executeDeleteItem(req, res);
-  }
-
-  error(res, 400, {
-    code: 'unknown-action',
-    message: `There is no action '${action}'`,
-  });  
-});
+);
 
 server.listen(port, () => {
   console.log(`listening on ${port}...`);

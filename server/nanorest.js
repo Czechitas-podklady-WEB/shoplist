@@ -1,14 +1,14 @@
-export const success = (response, results) => {
-  response.send({
+export const sendResource = (req, res, results) => {
+  res.send({
     status: 'success',
+    url: `${req.originalUrl}`,
     results,
   });
 };
 
-export const error = (response, httpStatus, { code, message }) => {
-  response.status(httpStatus).send({
+export const sendError = (req, res, httpStatus, errors) => {
+  res.status(httpStatus).send({
     status: 'error',
-    code,
-    message,
+    errors,
   });
 };
