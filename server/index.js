@@ -3,6 +3,7 @@ import cors from 'cors';
 import { param, body, validationResult } from 'express-validator';
 import { sendResource, sendError } from './nanorest.js';
 import {
+  getWeeks,
   getWeek,
   getDays,
   getList,
@@ -24,6 +25,10 @@ server.use(`${baseUrl}/docs`, express.static('docs/_site', {
 
 server.use(express.json());
 server.use(cors());
+
+server.get(`${baseUrl}/api/weeks`, (req, res) => {
+  sendResource(req, res, getWeeks());
+});
 
 server.get(
   `${baseUrl}/api/weeks/:weekNumber`,

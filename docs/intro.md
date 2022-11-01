@@ -11,28 +11,38 @@ Here you can find documentation to all the API endoints of Shoplist.
 
 This page is about getting all the data.
 
-## All shopping lists [GET]
+## All weeks of the year [GET]
 
 ```
-{{ site.apibase }}/lists
+{{ site.apibase }}/weeks
 ```
 
-The dataset always contains one shopping list with name _default_. This list cannot be deleted so you can rely on it always being there.
+## One week [GET]
 
-## One shopping list [GET]
-
-Get one shopping list with name `name`.
+Weeks are numbered from 0 to 51.
 
 ```
-{{ site.apibase }}/lists/{name}
+{{ site.apibase }}/weeks/{weekNumber}
 ```
 
-The dataset always contains one shopping list with name _default_. This list cannot be deleted so you can rely on it always being there.
-
-## Item of a shopping list [GET]
-
-Get the item with id `itemId` from shopping list with name `name`.
+## All days in a week [GET]
 
 ```
-{{ site.apibase }}/lists/{name}/{itemId}
+{{ site.apibase }}/weeks/{weekNumber}/days
+```
+
+## Shopping items for one day of a week [GET]
+
+```
+{{ site.apibase }}/weeks/{weekNumber}/days/{day}
+```
+
+There are always 7 days in every week: `mon`, `tue`, `wed`, `thu`, `fri`, `sat`, `sun`.
+
+## Shopping item with an id [GET]
+
+Returns a shopping item by its *id*.
+
+```
+{{ site.apibase }}/weeks/{weekNumber}/days/{day}/{id}
 ```

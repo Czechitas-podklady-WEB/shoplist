@@ -16,6 +16,12 @@ const createDefaultData = () => {
 
 let data = createDefaultData();
 
+export const getWeeks = () => {
+  return data.map((week, index) => ({
+    url: `/api/weeks/${index}`
+  }));
+};
+
 export const getWeek = (num) => {
   const week = data[num];
   const days = Object.fromEntries(
