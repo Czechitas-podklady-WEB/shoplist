@@ -92,11 +92,9 @@ const defaultTue = [
 
 const createDefaultData = () => {
   const result = new Array(52).fill(null).map(_ => ({
-    mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: [],
+    mon: [...defaultMon], tue: [...defaultTue], wed: [], thu: [], fri: [], sat: [], sun: [],
   }));
-
-  result[0].mon = defaultMon;
-  result[0].tue = defaultTue;
+  
   return result;
 };
 
