@@ -143,7 +143,7 @@ export const addItem = (num, day, product, amount, done) => {
   const list = getList(num, day);
   
   const newItem = {
-    id: nanoid(6),
+    id: nanoid(8),
     product,
     amount,
     done,
@@ -165,7 +165,7 @@ export const updateItem = (num, day, itemId, product, amount, done) => {
   }
   
   if (amount !== undefined) {
-    item.amount = amount;
+    item.amount = Number(amount);
   }
 
   if (done !== undefined) {

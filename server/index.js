@@ -117,6 +117,7 @@ server.post(
   `${baseUrl}/api/weeks/:weekNumber/days/:day`, 
   param('weekNumber').isInt({ min: 0, max: 51}),
   param('day').isIn(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  body('amount').isInt({ min: 0 }),
   (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -129,16 +130,8 @@ server.post(
       msgs.push("The field 'product' is required");
     }
 
-    if (amount === undefined) {
-      msgs.push("The field 'amount' is required");
-    }
-
     if (typeof product !== 'string') {
       msgs.push("The field 'product' must be a string");
-    }
-
-    if (typeof amount !== 'string') {
-      msgs.push("The field 'amount' must be a string");
     }
 
     if (typeof done !== 'boolean') {
@@ -151,7 +144,7 @@ server.post(
     }
 
     const { weekNumber, day } = req.params;
-    const newList = addItem(weekNumber, day, product, amount, done);
+    const newList = addItem(weekNumber, day, product, Number(amount), done);
 
     sendResource(req, res, newList);
   }
@@ -170,12 +163,18 @@ server.patch(
     const { product, amount, done } = req.body;
     
     const msgs = [];
+    if (amount !== undefined) {
+      if (
+        typeof amount !== 'number' ||
+        !Number.isInteger(amount) ||
+        amount < 0
+      ) {
+        msgs.push("The field 'amount' must be a positive integer");
+      }
+    }
+    
     if (product !== undefined && typeof product !== 'string') {
       msgs.push("The field 'product' must be a string");
-    }
-
-    if (amount !== undefined && typeof amount !== 'string') {
-      msgs.push("The field 'amount' must be a string");
     }
 
     if (done !== undefined && typeof done !== 'boolean') {
@@ -183,10 +182,9 @@ server.patch(
     }
 
     if (msgs.length > 0) {
-      sendError(req, res, 400, msgs);
+      return sendError(req, res, 400, msgs);
     }
 
-    
     const { weekNumber, day, itemId } = req.params;
 
     const item = updateItem(weekNumber, day, itemId, product, amount, done);
