@@ -7,97 +7,56 @@ nav_order: 1
 
 # Manipulating the data on the server
 
-All changes to the data on the server are done by a POST request. Each POST request has an `action` filed signaling the action to be performed.
-
-## Create new shopping list [POST]
-
-Create new shopping list with name `name`,
+## Add a new item to a list [POST]
 
 ```
-{{ site.apibase }}/lists/{name}
+{{ site.apibase }}/weeks/{weekNumber}/days/{day}
 ```
 
 Body:
 
 ```json
 {
-  "action": "create"
+  "product": "Product Name",
+  "amount": 2,
+  "unit": "kg",
+  "done": true,
 }
 ```
-
-The parametr `name` can only consist of lowercase letters and numbers. No special characters or accented letters are allowed.
-
-## Add item to a list [POST]
-
-Add one item to the shopping list with name `name`.
-
-```
-{{ site.apibase }}/lists/{name}
-```
-
-```json
-{
-  "action": "addItem",
-  "product": "Apples",
-  "amount": "10 pc",
-  "done": true
-}
-```
-
-Besides `action`, the JSON has these properties:
 
 | Property | Type    | Required | Default value |
 | -------- | ------- | -------- | ------------- |
 | product  | string  | yes      | _none_        |
-| amount   | string  | no       | `""`          |
+| amount   | integer | yes      | _none_        |
+| unit     | string  | yes      | _none_        |
 | done     | boolean | no       | `false`       |
 
 The endpoint returns the whole updated list.
 
-## Toggle item done [POST]
+## Update existing item [PATCH]
 
-Flip the boolean value of the field `done` of item with id `itemId` in the list with name `name`.
+Change any property of an item with given *id*.
 
 ```
-{{ site.apibase }}/lists/{name}/{itemId}
+{{ site.apibase }}/weeks/{weekNumber}/days/{day}/{id}
 ```
+
+Example:
 
 ```json
 {
-  "action": "toggleDone"
+  "done": true
 }
 ```
 
 The endpoint return the updated item.
 
-## Delete item from a list [POST]
+## Delete item from a list [DELETE]
 
-Delete the item with id `itemId` from the shopping list with name `name`.
+Delete the item with give *id* from a list.
 
 ```
-{{ site.apibase }}/lists/{name}/{itemId}
-```
-
-```json
-{
-  "action": "deleteItem"
-}
+{{ site.apibase }}/weeks/{weekNumber}/days/{day}/{id}
 ```
 
 The endpoint returns the whole updated list.
-
-## Delete the whole list [POST]
-
-Delete the shopping list with name `name`.
-
-```
-{{ site.apibase }}/lists/{name}
-```
-
-```json
-{
-  "action": "delete"
-}
-```
-
-Beware, that the default list with name _default_ cannot be deleted.

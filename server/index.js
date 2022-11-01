@@ -124,7 +124,7 @@ server.post(
       return sendError(req, res, 404, errors.array());
     }
 
-    const { product, amount, done = false } = req.body;
+    const { product, amount, unit, done = false } = req.body;
     const msgs = [];
     if (product === undefined) {
       msgs.push("The field 'product' is required");
@@ -134,17 +134,20 @@ server.post(
       msgs.push("The field 'product' must be a string");
     }
 
+    if (typeof unit !== 'string') {
+      msgs.push("The field 'unit' must be a string");
+    }
+
     if (typeof done !== 'boolean') {
       msgs.push("The field 'done' must be a boolean");
     }
 
     if (msgs.length > 0) {
-      sendError(req, res, 400, msgs);
-      return;
+      return sendError(req, res, 400, msgs);
     }
 
     const { weekNumber, day } = req.params;
-    const newList = addItem(weekNumber, day, product, Number(amount), done);
+    const newList = addItem(weekNumber, day, product, Number(amount), unit, done);
 
     sendResource(req, res, newList);
   }
@@ -160,7 +163,7 @@ server.patch(
       return sendError(req, res, 404, errors.array());
     }
 
-    const { product, amount, done } = req.body;
+    const { product, amount, unit, done } = req.body;
     
     const msgs = [];
     if (amount !== undefined) {
@@ -177,6 +180,10 @@ server.patch(
       msgs.push("The field 'product' must be a string");
     }
 
+    if (unit !== undefined && typeof unit !== 'string') {
+      msgs.push("The field 'unit' must be a string");
+    }
+
     if (done !== undefined && typeof done !== 'boolean') {
       msgs.push("The field 'done' must be a boolean");
     }
@@ -187,7 +194,7 @@ server.patch(
 
     const { weekNumber, day, itemId } = req.params;
 
-    const item = updateItem(weekNumber, day, itemId, product, amount, done);
+    const item = updateItem(weekNumber, day, itemId, product, amount, unit, done);
 
     if (item === undefined) {
       sendError(req, res, 404, ['No item with this id']);

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Getting list data
+title: Getting data
 permalink: /
 nav_order: 0
 ---

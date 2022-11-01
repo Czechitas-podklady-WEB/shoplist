@@ -139,13 +139,14 @@ export const getItem = (num, day, itemId) => {
   return list.find((item) => item.id === itemId);
 }
 
-export const addItem = (num, day, product, amount, done) => {
+export const addItem = (num, day, product, amount, unit, done) => {
   const list = getList(num, day);
   
   const newItem = {
     id: nanoid(8),
     product,
     amount,
+    unit,
     done,
   };
 
@@ -153,7 +154,7 @@ export const addItem = (num, day, product, amount, done) => {
   return list;
 }
 
-export const updateItem = (num, day, itemId, product, amount, done) => {
+export const updateItem = (num, day, itemId, product, amount, unit, done) => {
   const item = getItem(num, day, itemId);
   
   if (item === undefined) {
@@ -166,6 +167,10 @@ export const updateItem = (num, day, itemId, product, amount, done) => {
   
   if (amount !== undefined) {
     item.amount = Number(amount);
+  }
+
+  if (unit !== undefined) {
+    item.unit = unit;
   }
 
   if (done !== undefined) {
