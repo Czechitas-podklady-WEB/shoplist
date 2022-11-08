@@ -13,6 +13,7 @@ import {
   deleteItem,
   resetList,
   clearList,
+  moveItem,
 } from './lists.js';
 
 const port = process.env.PORT ?? 4000;
@@ -252,6 +253,37 @@ server.delete(
     }
 
     sendResource(req, res, list);
+  }
+);
+
+server.post(
+  `${baseUrl}/api/weeks/:weekNumber/days/:day/:itemId/actions`,
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  param('day').isIn(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  body('type').isIn(['moveUp', 'moveDown']),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
+
+    const { weekNumber, day, itemId } = req.params;
+    const { type } = req.body;
+    
+    let newList = undefined;
+    
+    if (type === 'moveUp') {
+      newList = moveItem(weekNumber, day, itemId, 'up');
+    } else if (type === 'moveDown') {
+      newList = moveItem(weekNumber, day, itemId, 'down');
+    }
+
+    if (newList === undefined) {
+      sendError(req, res, 404, ['No item with this id']);
+      return;
+    }
+
+    sendResource(req, res, newList);
   }
 );
 

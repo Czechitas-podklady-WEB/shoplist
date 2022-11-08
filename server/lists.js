@@ -196,6 +196,41 @@ export const deleteItem = (num, day, itemId) => {
   return list;
 }
 
+export const moveItem = (num, day, itemId, direction) => {
+  const list = getList(num, day);
+  const index = list.findIndex((item) => item.id === itemId);
+  
+  if (index === -1) {
+    return undefined;
+  }
+
+  if (direction === 'up') {
+    if (index === 0) {
+      return list;
+    }
+
+    const swap = list[index - 1];
+    list[index - 1] = list[index];
+    list[index] = swap;
+
+    return list;
+  }
+
+  if (direction === 'down') {
+    if (index === (list.length - 1)) {
+      return list;
+    }
+
+    const swap = list[index + 1];
+    list[index + 1] = list[index];
+    list[index] = swap;
+
+    return list;
+  }
+  
+  return undefined;
+}
+
 export const resetList = (num, day) => {
   data[num][day] = createList(defaultLists[day]);
   return data[num][day];
