@@ -11,7 +11,8 @@ import {
   addItem,
   updateItem,
   deleteItem,
-  // resetToDefault,
+  resetList,
+  clearList,
 } from './lists.js';
 
 const port = process.env.PORT ?? 4000;
@@ -150,6 +151,32 @@ server.post(
     const newList = addItem(weekNumber, day, product, Number(amount), unit, done);
 
     sendResource(req, res, newList);
+  }
+);
+
+server.post(
+  `${baseUrl}/api/weeks/:weekNumber/days/:day/actions`, 
+  param('weekNumber').isInt({ min: 0, max: 51}),
+  param('day').isIn(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  body('type').isIn(['reset', 'clear']),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(req, res, 404, errors.array());
+    }
+
+    const { weekNumber, day } = req.params;
+    const { type } = req.body;
+    
+    if (type === 'reset') {
+      const newList = resetList(weekNumber, day);
+      return sendResource(req, res, newList);
+    }
+
+    if (type === 'clear') {
+      const newList = clearList(weekNumber, day);
+      return sendResource(req, res, newList);
+    }
   }
 );
 

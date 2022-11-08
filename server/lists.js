@@ -196,6 +196,16 @@ export const deleteItem = (num, day, itemId) => {
   return list;
 }
 
+export const resetList = (num, day) => {
+  data[num][day] = createList(defaultLists[day]);
+  return data[num][day];
+}
+
+export const clearList = (num, day) => {
+  data[num][day] = [];
+  return data[num][day];
+}
+
 // export const getAllLists = () => data.map((list) => ({
 //   name: list.name,
 //   itemsCount: list.items.length,
