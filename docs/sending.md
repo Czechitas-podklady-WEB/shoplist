@@ -60,3 +60,66 @@ Delete the item with give *id* from a list.
 ```
 
 The endpoint returns the whole updated list.
+
+## Move item up or down in a list [POST]
+
+Move the item with give *id* from up or down in the list.
+
+```
+{{ site.apibase }}/weeks/{weekNumber}/days/{day}/{id}/actions
+```
+
+To move up, send
+
+```json
+{
+  "type": "moveUp"
+}
+```
+
+To move down, send
+
+```json
+{
+  "type": "moveDown"
+}
+```
+
+The endpoint returns the whole updated list.
+
+## Reset list [POST]
+
+Resets the list to its original items
+
+```
+{{ site.apibase }}/weeks/{weekNumber}/days/{day}/actions
+```
+
+Body:
+
+```json
+{
+  "type": "reset"
+}
+```
+
+The endpoint returns the whole updated list.
+
+## Clear list [POST]
+
+Clears all the items in the list
+
+```
+{{ site.apibase }}/weeks/{weekNumber}/days/{day}/actions
+```
+
+Body:
+
+```json
+{
+  "type": "clear"
+}
+```
+
+The endpoint returns en empty list.
+
