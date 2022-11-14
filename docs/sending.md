@@ -63,7 +63,7 @@ The endpoint returns the whole updated list.
 
 ## Move item up or down in a list [POST]
 
-Move the item with give *id* from up or down in the list.
+Move the item with given *id* up or down in a list.
 
 ```
 {{ site.apibase }}/weeks/{weekNumber}/days/{day}/{id}/actions
