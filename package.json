@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build:docs": "cd docs && bundler exec jekyll b -c _config.server.yml && cd -",
+    "build": "tsc",
     "dev:docs": "cd docs && bundler exec jekyll b -c _config.server.yml -w",
     "dev:server": "tsc -w",
     "start": "npm run build:docs && node server/index.js",
