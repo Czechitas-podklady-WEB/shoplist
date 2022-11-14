@@ -79,7 +79,7 @@ export const weekController = (options: WeekControllerOptions) => {
       .not()
       .isString()
       .isInt({ min: 1 })
-      .withMessage('Amount must be a whole number greater then 0'),,
+      .withMessage('Amount must be a whole number greater then 0'),
     body('unit').optional().isString().notEmpty(),
     body('done').optional().isBoolean(),
     resource('item', (req, res) => {
