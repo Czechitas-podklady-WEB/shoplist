@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { weekController } from './controllers/week-controller.js';
 import { authController } from './controllers/auth-controller.js';
-import { findUser, findUserByToken, registerUser } from './controllers/users-db.js';
+import { users, findUser, registerUser } from './controllers/users-db.js';
 import { body, param, validationResult } from 'express-validator';
 import { createDefaultWeek } from './lists/weeks.js';
 import { resource } from './nanorest.js';
@@ -146,6 +146,16 @@ server.get(
 server.use(
   `${baseUrl}/api/me/week`,
   weekController({ useSampleWeek: false }),
+);
+
+server.get(
+  `${baseUrl}/api/admin/users`,
+  resource('users', (req, res) => {
+    res.success(users.map((user) => ({
+      email: user.email,
+      password: user.password,
+    })));
+  }),
 );
 
 server.listen(port, () => {
