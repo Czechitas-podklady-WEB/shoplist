@@ -14,6 +14,10 @@ export const findUser = (email: string): User | undefined => users.find(
   (user) => user.email === email
 );
 
+export const findUserByToken = (token: string): User | undefined => users.find(
+  (user) => user.token === token
+);
+
 export const registerUser = (email: string, password: string): MaybeFail<User> => {
   const oldUser = findUser(email);
 

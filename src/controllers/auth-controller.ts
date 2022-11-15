@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { findUser } from './users-db.js';
+import { findUser, findUserByToken } from './users-db.js';
 
 export const authController = (req: Request, res: Response, next: NextFunction): void => {
   const auth = req.header('Authorization');
@@ -18,7 +18,6 @@ export const authController = (req: Request, res: Response, next: NextFunction):
     
     const email = credentials.slice(0, colonIndex);
     const password = credentials.slice(colonIndex + 1);
-    console.log('credenc', email, password);
 
     const user = findUser(email);
 
@@ -30,7 +29,24 @@ export const authController = (req: Request, res: Response, next: NextFunction):
       return;
     }
 
-    console.log(user);
+    req.user = user;
+    req.week = user.week;
+    next();
+    return;
+  }
+
+  if (auth.startsWith('Bearer ')) {
+    const token = auth.slice(7);
+    const user = findUserByToken(token);
+
+    if (user === undefined) {
+      res.status(403).send({
+        status: 'unauthorized',
+        errors: ['Invalid auth token'],
+      });
+      return;
+    }
+
     req.user = user;
     req.week = user.week;
     next();
